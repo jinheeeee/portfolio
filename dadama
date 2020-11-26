@@ -1,0 +1,71 @@
+@section ('css')
+    @parent
+@endsection
+
+@section ('content')
+
+@include('option_select')
+
+    {{--    this is the header navgation--}}
+    <div class="owl-carousel owl-theme box-shadow-2px-10px position-fixed" id="menu_header">
+        <div class="menu_header_div text-center">
+            <a id="menu_header_0" category_id="0" business_category="0" href="#header_0" class="text-primary d-inline-block">전체</a>
+        </div>
+        @foreach($menuCategory as $key => $menu_category)
+            <div class="menu_header_div text-center">
+                <a id="menu_header_{{$key+1}}" business_category="{{ $menu_category->id }}" resource_name="{{ $menu_category->resource_name }}" menu_category="{{$menu_category->name}}" category_id="{{ $key + 1 }}" href="#header_{{$key+1}}"
+                   class="text-textgray d-inline-block" style="padding-top:14px; padding-bottom:14px;"> {{$menu_category->name}}</a>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="owl-carousel owl-theme" id="menu_list">
+        @foreach($menuItems as $key => $menu_items)
+
+        <div class="list_list put-video-here" id="list_{{$key}}" data-hash="header_{{$key}}">
+
+                @if(count($menu_items) == 0)
+
+                    <div id="oder_list_for_id_{{$key}}" class="bg-white mb-0 body-p">
+                        <div class="menu_min_height d-flex flex-column align-items-center justify-content-center">
+                            <img src="/images/emo-sorry.png" alt="">
+                            <p class="m-0 text-graylighten-4">앗! 현재 카테고리에 메뉴가 아직 없습니다.</p>
+                            <p class="m-0 text-graylighten-4">빠른 시일 내에 준비할게요!</p>
+                        </div>
+                    </div>
+                @else
+                    <ul id="oder_list_for_id_{{$key}}" class="menu_min_height bg-white mb-0">
+
+                        <div class="bg-white"></div>
+
+                        @foreach ($menu_items as $items)
+                            <li class="origin_list"
+                                menu-item-id="{{$items->menu_item_id}}"
+                                store-id="{{$items->store_id}}"
+                                menu-item-name="{{$items->menu_item_name}}"
+                                menu-item-price="{{$items->menu_item_price}}"
+                                store-name="{{$items->store_name}}"
+                                store-in-store="{{$items->store_in_store_id}}">
+                                <p class="m-0">{{$items->menu_item_name}}</p>
+                                @if(isset($items->category))
+                                <small class="text-gray">{{$items->category}}</small>
+                                @endif
+                                {{-- 업체명 삭제 --}}
+                                 {{-- | {{$items->store_name}} --}}
+                                <p class="font-weight-bold mb-4">{{number_format($items->menu_item_price)}}원</p>
+                            </li>
+                        @endforeach
+
+                    </ul>
+                @endif
+            </div>
+        @endforeach
+    </div>
+
+    @include('terms_of_use')
+
+@endsection
+
+@section ('js')
+    @parent
+@endsection
