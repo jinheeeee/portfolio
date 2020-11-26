@@ -1,0 +1,407 @@
+@extends ('components.app')
+
+@section ('css')
+@parent
+@endsection
+
+@section ('content')
+
+@php
+$today = $data->today;
+$days = ['월', '화', '수', '목', '금', '토', '일'];
+@endphp
+
+<section class="container-fluid bg-whitegray" style="padding:32px 32px 20px;">
+  <div class="row">
+    <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        <a href="/delivery-order" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/delivery-order.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 배달 주문관리 </b></p>
+        </a>
+      </div>
+    </div>
+    <!-- <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        <a href="#" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/store-order.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px;"><b> 매장 주문관리 </b></p>
+        </a>
+      </div>
+    </div> -->
+    <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        @if ( isset($ADMIN_PASSWORD_CHECK) ? substr($ADMIN_PASSWORD_CHECK, 2, 1) === '1' : 0)
+        <a onclick="checkAdminPasswordModal(3)" class="text-center d-block box-shadow cursor-pointer"
+          style="height:126px;">
+          <img src="/images/delivery-manage.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 배달 대행관리 </b></p>
+        </a>
+        @else
+        <a href="/delivery-agency" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/delivery-manage.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 배달 대행관리 </b></p>
+        </a>
+        @endif
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        @if ( isset($ADMIN_PASSWORD_CHECK) ? substr($ADMIN_PASSWORD_CHECK, 1, 1) === '1' : 0)
+        <a onclick="checkAdminPasswordModal(2)" class="text-center d-block box-shadow cursor-pointer"
+          style="height:126px;">
+          <img src="/images/sales.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 매출관리 </b></p>
+        </a>
+        @else
+        <a href="/sales" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/sales.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 매출관리 </b></p>
+        </a>
+        @endif
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        <a href="/staff/staff-manage" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/staff.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 직원관리 </b></p>
+        </a>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        <a href="/setting/basic" class="text-center d-block box-shadow" style="height:126px;">
+          <img src="/images/setting.png" alt="" style="padding-top:18px;">
+          <p style="margin-top:6px; font-size:1.15rem"><b> 설정 </b></p>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container-fluid bg-lightgray" style="padding:20px 32px 32px;">
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 h-100 box-shadow-0-0-10px-0">
+        <div class="card-body">
+          <div class="card-title">
+            <div class="d-flex align-items-center">
+              <ul class="nav nav-underline-tabs" id="sales-tablist" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link font-weight-bold active " id="weekly-sales-tab" data-toggle="tab"
+                    href="#weekly-sales-tabpanel" role="tab" style="font-size:1.15rem">주간 매출</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link font-weight-bold " id="monthly-sales-tab" href="#monthly-sales-tabpanel" role="tab"
+                    style="font-size:1.15rem">월간 매출</a>
+                </li>
+              </ul>
+              <div id="weekly-from-to" class="ml-auto font-16px text-textgray">
+
+                @php
+                $i = 0;
+                @endphp
+
+                @foreach ($data->weekly_sales as $key => $items)
+                @if ( $i == 0 )
+                {{ '( ' . substr($key, 2) . ' ~ ' }}
+                @elseif ( $i == 6)
+                {{ substr($key, 2) . ' )' }}
+                @endif
+
+                @php
+                $i++;
+                @endphp
+
+                @endforeach
+
+              </div>
+
+              <div id="monthly-from-to" class="ml-auto font-16px text-textgray" style="display:none;">
+                {{ '( ' . substr(substr($today, 2), 0, 6) . '01 ~ ' . now()->endOfMonth()->format('y-m-d') . ' )' }}
+              </div>
+
+            </div>
+          </div>
+          <div class="card-text">
+            <div class="tab-content">
+              <div class="tab-pane show active" id="weekly-sales-tabpanel" role="tabpanel">
+                <!-- weekly sales -->
+                <div class="d-flex justify-content-center">
+                  <div id="weekly-sales-chart-container">
+                    <canvas id="weekly-sales-chart">
+                      @foreach ($data->weekly_sales as $item)
+                      <data>{{ $item->amount }}</data>
+                      @endforeach
+                    </canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane" id="monthly-sales-tabpanel" role="tabpanel">
+                <!-- monthly sales -->
+                <div class="row mt-4 ">
+                  <div class="col-6">
+                    <div class="bg-primary rounded p-3">
+                      <h5 class="text-white font-16px">당월 총 매출</h5>
+                      {{--                    <span class="font-weight-bold text-primary font-30px font-xl-36px">{{ number_format($data->monthly_sales->amount) ?? '0' }}원</span>--}}
+                      <span id="monthly_sales_amount"
+                        class="font-weight-bold text-white" style="font-size:24px;">0원</span>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="bg-primary rounded p-3">
+                      <h5 class="text-white mt-20px font-16px">당월 총 주문</h5>
+                      <span id="monthly_sales_order"
+                        class="font-weight-bold text-white" style="font-size:24px;">0건</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="test" class="row mt-3">
+
+                  {{-- 월간 매출 : 현금 --}}
+                  <div class="col-3">
+                    <div class="card p-3">
+                      <p class="mb-1 text-textgray font-16px">
+                        현금
+                      </p>
+                      <p id="monthly_sales_cash_count"class="mb-1 text-primary font-weight-bold font-18px">
+                        100건
+                      </p>
+                      <p id="monthly_sales_cash" class="font-weight-bold font-18px m-0">
+                        0원
+                      </p>
+                    </div>
+                  </div>
+
+                  {{-- 월간 매출 : 카드 --}}
+                  <div class="col-3">
+                    <div class="card p-3">
+                      <p class="mb-1 text-textgray font-16px">
+                        카드
+                      </p>
+                      <p id="monthly_sales_card_count"class="mb-1 text-primary font-weight-bold font-18px">
+                        100건
+                      </p>
+                      <p id="monthly_sales_card" class="font-weight-bold font-18px m-0">
+                        0원
+                      </p>
+                    </div>
+                  </div>
+
+                  {{-- 월간 매출 : 완불 --}}
+                  <div class="col-3">
+                    <div class="card p-3">
+                      <p class="mb-1 text-textgray font-16px">
+                        완불
+                      </p>
+                      <p id="monthly_sales_done_count" class="mb-1 text-primary font-weight-bold font-18px">
+                        100건
+                      </p>
+                      <p id="monthly_sales_done" class="font-weight-bold font-18px m-0">
+                        0원
+                      </p>
+                    </div>
+                  </div>
+
+                  {{-- 월간 매출 : 계좌이체 --}}
+                  <div class="col-3">
+                    <div class="card p-3">
+                      <p class="mb-1 text-textgray font-16px">
+                        계좌이체
+                      </p>
+                      <p id="monthly_sales_transfer_count"class="mb-1 text-primary font-weight-bold font-18px">
+                        100건
+                      </p>
+                      <p id="monthly_sales_transfer" class="font-weight-bold font-18px m-0">
+                        0원
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-xl-9 mt-3">
+      <div class="card">
+
+          <div class="card-body p-0 position-relative">
+            @php
+             $i = 0;
+            @endphp
+
+            <div class="row mx-0" style="{{ $data->usable_order_path_count == 0 ? 'opacity:0.2': '' }} ">
+              <div class="col-7 col-xl-8" style="padding:24px 24px 0 24px;">
+                  {{-- 요일 주문 건 --}}
+                <div class="card-title">
+                  <div id="order-path-content" class="d-flex align-items-center">
+                    <div class="font-weight-bold ">
+
+                      @foreach ($data->order_path_by_day as $key => $items)
+                        @if ($key == $today)
+                          <p class="font-weight-bold " style="font-size:1.15rem">{{ $days[$i++] }}요일 주문 건</p>
+                          <data id="today-index" class="d-none">{{ $i }}</data>
+                        {{-- @else
+                          <p class="d-none font-weight-bold " style="font-size:1.15rem">{{ $days[$i++] }}요일 주문 건</p> --}}
+                        @endif
+                      @endforeach
+
+                    </div>
+                    <div class="ml-auto font-16px text-textgray">
+
+                      @foreach ($data->order_path_by_day as $key => $items)
+                        @if ($key == $today)
+                        <p> {{ '( ' . substr($key, 2) . ' )' }} </p>
+                        @else
+                        <p class="d-none"> {{ '( ' . substr($key, 2) . ' )'}} </p>
+                        @endif
+                      @endforeach
+
+                    </div>
+                  </div>
+                </div>
+                {{-- 막대 그래프 --}}
+                <div id="chartWrapper_row" class="row">
+                  {{-- 보여지는 부분 --}}
+                  <div id="chartWrapper" class="bg-white position-relative w-100" style="overflow-y:scroll;">
+                    {{-- 유동적으로 늘어나는 영역 --}}
+                    <div class="d-flex justify-content-center">
+                        @if ( $data->usable_order_path_count  < 12 )
+                        <div id="order-path-chart-container" style="width:100%" data-count="{{$data->usable_order_path_count }}">
+                          <canvas id="order-path-chart">
+                        @else
+                        <div id="order-path-chart-container" style="min-width:680px; width:100%;" data-count="{{ $data->usable_order_path_count }}">
+                          <canvas id="order-path-chart" width="100%">
+                        @endif
+                          @foreach ($data->order_path_by_day as $key => $items)
+                          <data id="{{ 'order-path-'. $key }}">
+                            @foreach ($items as $item)
+                                <data>{{ $item->name }}</data>
+                                <data>{{ $item->count }}</data>
+                                <data>{{ $item->color }}</data>
+                            @endforeach
+                            </data>
+                          @endforeach
+                        </canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="col-5 col-xl-4 bg-whitegray">
+                <div style="padding:24px;">
+                  <p class="font-weight-bold text-textgray" style="font-size:1.15rem">주문 건 정보</p>
+                  <div id="order_count_info" style="overflow-y:auto;">
+
+                    @foreach ($data->order_path_by_day as $key => $items)
+                    <div id="{{ 'order-path-badge-'. $key }}" class="{{ $key == $today ? '' : 'd-none' }}">
+                      @foreach ($items as $item)
+                        <div class="d-flex justify-content-between py-2">
+                          <div>
+                            <span class="mr-1 d-inline-block" style="width:16px; height:10px;border-radius:6px;background-color:{{ $item->color }}"></span>
+                            <span class="text-textgray font-18px">{{ $item->name }}</span>
+                          </div>
+                          <div class="font-weight-bold font-18px">{{ number_format($item->count) }}건</div>
+                        </div>
+                      @endforeach
+                    </div>
+                    @endforeach
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            @if ($data->usable_order_path_count == 0)
+              <div class="position-absolute w-100 h-100 d-flex justify-content-center align-items-center flex-column"
+                style="left:0; top:0; z-index:1;">
+                <p class="text-textgray">주문연동설정에서 주문경로를 선택해주세요.</p>
+                <a href="/setting/order" class="btn btn-sky" style="color:#0899e5;">주문경로 선택하기</a>
+              </div>
+            @endif
+          </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-3 mt-3">
+      <div class="card h-100" style="padding:24px;">
+
+        <div id="dashboard-day-payment-method-header" class="d-flex align-items-center">
+          <div class="font-weight-bold ">
+
+          @php
+            $i = 0;
+          @endphp
+
+          @foreach ($data->payment_method_by_day as $key => $items)
+            @if ($key == $today)
+              <p class="font-weight-bold m-0" style="font-size:1.15rem">{{ $days[$i++] }}요일 결제수단</p>
+            {{-- @else
+              <p class="d-none font-weight-bold m-0" style="font-size:1.15rem">{{ $days[$i++] }}요일 결제수단</p> --}}
+            @endif
+          @endforeach
+
+          </div>
+          <div class="ml-auto font-16px text-textgray">
+
+            @foreach ($data->payment_method_by_day as $key => $items)
+              @if ($key == $today)
+                <p class="m-0"> {{ '( ' . substr($key, 2) . ' )' }} </p>
+              @else
+                <p class="m-0 d-none"> {{ '( ' . substr($key, 2) . ' )'}} </p>
+              @endif
+            @endforeach
+
+          </div>
+        </div>
+
+          @php
+            $reverseItems;
+          @endphp
+
+          <div id="dashboard-day-payment-method">
+           @foreach($data->payment_method_by_day as $key => $items)
+           {{-- 오늘 데이터만 보이게 --}}
+              @if ($today == $key)
+               <div id="{{ 'payment-method-' . $key }}" class="row">
+               @else
+           {{-- 오늘 데이터가 아니면 숨기기 --}}
+               <div id="{{ 'payment-method-' . $key }}" class="row d-none">
+               @endif
+          @php
+          $reverseItems = collect($items)->sortByDesc('name');
+          @endphp
+
+            @foreach ( $reverseItems as $item )
+            <div class="col-3 col-xl-6 mt-3">
+              <div class="card border-0 p-3">
+                <p class="text-textgray mb-2">{{ $item->name }}</p>
+                <p class="text-primary font-weight-bold  font-18px m-0">{{ number_format($item->count) ?? '0' }}건</p>
+                <p class="font-weight-bold m-0 font-18px">{{ number_format($item->amount) ?? '0'}}원</p>
+              </div>
+            </div>
+            @endforeach
+
+              </div>
+          @endforeach
+          </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+@endsection
+
+@section ('js')
+@parent
+<script src="https://gitcdn.link/repo/jedtrow/Chart.js-Rounded-Bar-Charts/master/Chart.roundedBarCharts.js"></script>
+@endsection
